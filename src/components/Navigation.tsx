@@ -19,8 +19,8 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-[100] mix-blend-difference">
-      <div className="flex items-center justify-between px-6 md:px-12 py-6">
+    <nav className="fixed top-0 left-0 w-full z-[9999]">
+      <div className="flex items-center justify-between px-6 md:px-12 py-5 bg-background/10 backdrop-blur-md border-b border-border/10">
         <Link to="/" className="relative z-[101]">
           <span className="micro-text text-primary-foreground tracking-[0.2em]" style={{ color: 'white' }}>
             Art at Central

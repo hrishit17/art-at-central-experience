@@ -62,7 +62,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-foreground/30" />
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-12 pb-16 md:pb-24">
+      <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-12">
         <div>
           <div ref={line1Ref} className="overflow-hidden">
             <h1

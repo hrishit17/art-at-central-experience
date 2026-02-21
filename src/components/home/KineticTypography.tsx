@@ -28,7 +28,7 @@ const KineticTypography = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="px-6 md:px-12 py-32 md:py-52">
+    <section ref={sectionRef} className="px-6 md:px-12 py-16 md:py-24">
       <p className="micro-text text-muted-foreground mb-12">Our Mission</p>
       <p className="editorial-heading text-foreground text-3xl md:text-6xl lg:text-7xl leading-tight">
         {missionWords.map((word, i) => (

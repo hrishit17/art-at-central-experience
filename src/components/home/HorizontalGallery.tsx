@@ -37,7 +37,7 @@ const HorizontalGallery = () => {
   return (
     <section ref={sectionRef} className="relative overflow-hidden h-screen">
       {/* Header */}
-      <div className="absolute top-8 left-6 md:left-12 z-10">
+      <div className="absolute top-8 left-6 md:left-12 z-10 pt-16">
         <p className="micro-text text-muted-foreground mb-2">The Spaces</p>
         <h2 className="editorial-heading text-foreground text-4xl md:text-6xl">
           Gallery Rooms
