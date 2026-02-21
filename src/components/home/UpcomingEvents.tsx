@@ -54,11 +54,11 @@ const UpcomingEvents = () => {
         Exhibitions
       </h2>
 
-      {/* Asymmetrical Grid */}
-      <div className="grid grid-cols-12 gap-4 md:gap-6">
+      {/* Aligned Grid */}
+      <div className="grid grid-cols-12 gap-6 md:gap-8">
         {/* Large Card */}
         <div className="event-card col-span-12 md:col-span-7 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/3]">
+          <div className="overflow-hidden aspect-[4/5]">
             <img
               src={upcomingEvents[0].image}
               alt={upcomingEvents[0].title}
@@ -73,8 +73,8 @@ const UpcomingEvents = () => {
         </div>
 
         {/* Small Card */}
-        <div className="event-card col-span-12 md:col-span-5 md:mt-24 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[3/4]">
+        <div className="event-card col-span-12 md:col-span-5 group" data-cursor="art">
+          <div className="overflow-hidden aspect-[4/5]">
             <img
               src={upcomingEvents[1].image}
               alt={upcomingEvents[1].title}
@@ -90,7 +90,7 @@ const UpcomingEvents = () => {
 
         {/* Medium Card */}
         <div className="event-card col-span-12 md:col-span-5 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/3]">
+          <div className="overflow-hidden aspect-[4/5]">
             <img
               src={upcomingEvents[2].image}
               alt={upcomingEvents[2].title}
@@ -105,8 +105,8 @@ const UpcomingEvents = () => {
         </div>
 
         {/* Tall Card */}
-        <div className="event-card col-span-12 md:col-span-7 md:-mt-16 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[16/9]">
+        <div className="event-card col-span-12 md:col-span-7 group" data-cursor="art">
+          <div className="overflow-hidden aspect-[4/5]">
             <img
               src={upcomingEvents[3].image}
               alt={upcomingEvents[3].title}

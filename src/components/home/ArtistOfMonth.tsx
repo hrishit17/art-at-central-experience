@@ -30,7 +30,7 @@ const ArtistOfMonth = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="px-6 md:px-12 py-24 md:py-40">
+    <section ref={sectionRef} className="px-6 md:px-12 py-16 md:py-24">
       <p className="micro-text text-muted-foreground mb-4">Featured</p>
       <h2 className="editorial-heading text-foreground text-5xl md:text-7xl mb-16 md:mb-24">
         Artist of the Month
