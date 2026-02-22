@@ -19,6 +19,7 @@ const Footer = () => {
             <div className="flex flex-col gap-2">
               <Link to="/" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Home</Link>
               <Link to="/about" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">About</Link>
+              <Link to="/exhibitions" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Exhibitions</Link>
               <Link to="/blogs" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Journal</Link>
               <Link to="/contact" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Contact</Link>
             </div>
@@ -34,9 +35,9 @@ const Footer = () => {
           <div>
             <p className="micro-text text-muted-foreground mb-4">Visit</p>
             <p className="body-text text-sm text-foreground">
-              123 Central Avenue<br />
-              Cape Town, 8001<br />
-              South Africa
+              Building No. 112, 4th Floor<br />
+              Lohia House, Chittaranjan Ave<br />
+              Kolkata-700073, West Bengal
             </p>
           </div>
           <div>
