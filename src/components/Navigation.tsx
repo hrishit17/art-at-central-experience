@@ -14,6 +14,7 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
   const links = [
     { path: "/", label: "Home" },
     { path: "/about", label: "About" },
+    { path: "/exhibitions", label: "Exhibitions" },
     { path: "/blogs", label: "Journal" },
     { path: "/contact", label: "Contact" },
   ];

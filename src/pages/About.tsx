@@ -99,6 +99,30 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* Address & Location */}
+      <section className="px-6 md:px-12 py-24 md:py-40 border-t border-border">
+        <p className="micro-text text-muted-foreground mb-4">Find Us</p>
+        <h2 className="editorial-heading text-foreground text-4xl md:text-6xl mb-12">
+          Visit the Gallery
+        </h2>
+        <p className="font-serif text-foreground text-2xl md:text-4xl leading-relaxed max-w-2xl">
+          Building No. 112, 4th Floor,<br />
+          Lohia House Building,<br />
+          Near By ICICI Bank,<br />
+          Chittaranjan Avenue (Central Ave),<br />
+          Kolkata Central, Kolkata-700073,<br />
+          West Bengal
+        </p>
+        <a
+          href="https://maps.google.com/?q=Building+No+112+Lohia+House+Chittaranjan+Avenue+Kolkata+700073+West+Bengal"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-12 micro-text border border-foreground text-foreground px-10 py-5 hover:bg-foreground hover:text-background transition-all duration-500"
+        >
+          Get Directions
+        </a>
+      </section>
     </div>
   );
 };
