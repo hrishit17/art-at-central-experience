@@ -19,11 +19,29 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
     { path: "/contact", label: "Contact" },
   ];
 
+  // Determine if we're on a page with a dark hero (home, about)
+  const isDarkHero = location.pathname === "/" || location.pathname === "/about";
+
   return (
     <nav className="fixed top-0 left-0 w-full z-[9999]">
-      <div className="flex items-center justify-between px-6 md:px-12 py-5 bg-background/10 backdrop-blur-md border-b border-border/10">
+      <div
+        className="flex items-center justify-between px-6 md:px-12 py-5 transition-all duration-500"
+        style={{
+          backgroundColor: isDarkHero
+            ? 'rgba(0, 0, 0, 0.25)'
+            : 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          borderBottom: isDarkHero
+            ? '1px solid rgba(255, 255, 255, 0.08)'
+            : '1px solid rgba(0, 0, 0, 0.05)',
+        }}
+      >
         <Link to="/" className="relative z-[101]">
-          <span className="micro-text text-primary-foreground tracking-[0.2em]" style={{ color: 'white' }}>
+          <span
+            className="micro-text tracking-[0.2em] transition-colors duration-500"
+            style={{ color: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }}
+          >
             Art at Central
           </span>
         </Link>
@@ -34,8 +52,8 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
             <Link
               key={link.path}
               to={link.path}
-              className="micro-text relative overflow-hidden group"
-              style={{ color: 'white' }}
+              className="micro-text relative overflow-hidden group transition-colors duration-500"
+              style={{ color: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }}
             >
               <span className={`inline-block transition-transform duration-300 ${location.pathname === link.path ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>
                 {link.label}
@@ -48,9 +66,9 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
             aria-label="Toggle focus mode"
           >
             {isFocusMode ? (
-              <EyeOff size={16} style={{ color: 'white' }} />
+              <EyeOff size={16} style={{ color: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }} />
             ) : (
-              <Eye size={16} style={{ color: 'white' }} />
+              <Eye size={16} style={{ color: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }} />
             )}
           </button>
         </div>
@@ -61,33 +79,24 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
           className="md:hidden relative z-[101] flex flex-col gap-1.5"
           aria-label="Toggle menu"
         >
-          <span
-            className="block w-5 h-px transition-all duration-300"
-            style={{
-              backgroundColor: 'white',
-              transform: menuOpen ? 'rotate(45deg) translateY(3.5px)' : 'none',
-            }}
-          />
-          <span
-            className="block w-5 h-px transition-all duration-300"
-            style={{
-              backgroundColor: 'white',
-              opacity: menuOpen ? 0 : 1,
-            }}
-          />
-          <span
-            className="block w-5 h-px transition-all duration-300"
-            style={{
-              backgroundColor: 'white',
-              transform: menuOpen ? 'rotate(-45deg) translateY(-3.5px)' : 'none',
-            }}
-          />
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="block w-5 h-px transition-all duration-300"
+              style={{
+                backgroundColor: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)',
+                transform: menuOpen && i === 0 ? 'rotate(45deg) translateY(3.5px)' :
+                  menuOpen && i === 2 ? 'rotate(-45deg) translateY(-3.5px)' : 'none',
+                opacity: menuOpen && i === 1 ? 0 : 1,
+              }}
+            />
+          ))}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="fixed inset-0 bg-background z-[100] flex flex-col items-center justify-center gap-8 mix-blend-normal">
+        <div className="fixed inset-0 bg-background z-[100] flex flex-col items-center justify-center gap-8">
           {links.map((link) => (
             <Link
               key={link.path}

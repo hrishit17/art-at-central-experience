@@ -62,7 +62,8 @@ const HorizontalGallery = () => {
             <img
               src={room.image}
               alt={room.name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              loading="lazy"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] will-change-transform"
             />
             <div className="absolute bottom-0 left-0 p-6 md:p-8">
               <h3 className="font-serif text-2xl md:text-3xl text-primary-foreground">{room.name}</h3>
