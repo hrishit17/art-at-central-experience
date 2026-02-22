@@ -62,7 +62,8 @@ const UpcomingEvents = () => {
             <img
               src={upcomingEvents[0].image}
               alt={upcomingEvents[0].title}
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
             />
           </div>
           <div className="mt-4">
@@ -78,7 +79,8 @@ const UpcomingEvents = () => {
             <img
               src={upcomingEvents[1].image}
               alt={upcomingEvents[1].title}
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
             />
           </div>
           <div className="mt-4">
@@ -94,7 +96,8 @@ const UpcomingEvents = () => {
             <img
               src={upcomingEvents[2].image}
               alt={upcomingEvents[2].title}
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
             />
           </div>
           <div className="mt-4">
@@ -110,7 +113,8 @@ const UpcomingEvents = () => {
             <img
               src={upcomingEvents[3].image}
               alt={upcomingEvents[3].title}
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
             />
           </div>
           <div className="mt-4">

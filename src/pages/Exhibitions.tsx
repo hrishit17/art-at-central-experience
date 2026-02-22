@@ -60,7 +60,8 @@ const Exhibitions = () => {
                 <img
                   src={event.image}
                   alt={event.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
                 />
               </div>
               <div className="mt-4">
@@ -87,7 +88,8 @@ const Exhibitions = () => {
                   <img
                     src={exhibit.image}
                     alt={exhibit.title}
-                    className="w-full h-full object-cover film-grain transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    className="w-full h-full object-cover film-grain transition-transform duration-700 group-hover:scale-105 will-change-transform"
                   />
                 </div>
                 <div className="mt-4">

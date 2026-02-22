@@ -55,7 +55,7 @@ const Hero = () => {
         ref={imageRef}
         src={heroImage}
         alt="Art at Central gallery interior"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover will-change-transform"
       />
 
       {/* Overlay */}

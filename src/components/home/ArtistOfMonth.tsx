@@ -43,6 +43,7 @@ const ArtistOfMonth = () => {
             <img
               src={featuredArtist.portrait}
               alt={featuredArtist.name}
+              loading="lazy"
               className="w-full aspect-[3/4] object-cover"
             />
           </div>
@@ -77,7 +78,8 @@ const ArtistOfMonth = () => {
                     <img
                       src={work.image}
                       alt={work.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
                     />
                   </div>
                   <p className="body-text text-sm text-foreground mt-2">{work.title}</p>
