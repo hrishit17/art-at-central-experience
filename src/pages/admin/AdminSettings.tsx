@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,26 @@ const AdminSettings = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const [enquiryEmail, setEnquiryEmail] = useState("");
+  const [enquiryLoading, setEnquiryLoading] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
+
+  // Fetch current enquiry email
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("id, enquiry_receiving_email")
+        .limit(1)
+        .single();
+      if (data) {
+        setEnquiryEmail(data.enquiry_receiving_email);
+        setSettingsId(data.id);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleEmailUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +77,29 @@ const AdminSettings = () => {
     }
   };
 
+  const handleEnquiryEmailUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enquiryEmail.trim() || !settingsId) return;
+    setEnquiryLoading(true);
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .update({ enquiry_receiving_email: enquiryEmail })
+        .eq("id", settingsId);
+      if (error) throw error;
+      toast({ title: "Enquiry email updated", description: `All enquiries will now be sent to ${enquiryEmail}.` });
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    } finally {
+      setEnquiryLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your admin credentials</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage your admin credentials & site configuration</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -75,14 +113,7 @@ const AdminSettings = () => {
             <form onSubmit={handleEmailUpdate} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new-email" className="text-xs uppercase tracking-wider text-muted-foreground">New Email</Label>
-                <Input
-                  id="new-email"
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  required
-                  placeholder="new@email.com"
-                />
+                <Input id="new-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} required placeholder="new@email.com" />
               </div>
               <Button type="submit" className="w-full" disabled={emailLoading}>
                 {emailLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
@@ -102,25 +133,11 @@ const AdminSettings = () => {
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new-password" className="text-xs uppercase tracking-wider text-muted-foreground">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                />
+                <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required placeholder="••••••••" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password" className="text-xs uppercase tracking-wider text-muted-foreground">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                />
+                <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="••••••••" />
               </div>
               <Button type="submit" className="w-full" disabled={passwordLoading}>
                 {passwordLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
@@ -130,6 +147,26 @@ const AdminSettings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Enquiry Email Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Contact Form Configuration</CardTitle>
+          <CardDescription>Set the email address that receives all general enquiries from the website</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleEnquiryEmailUpdate} className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="enquiry-email" className="text-xs uppercase tracking-wider text-muted-foreground">Enquiry Receiving Email</Label>
+              <Input id="enquiry-email" type="email" value={enquiryEmail} onChange={(e) => setEnquiryEmail(e.target.value)} required placeholder="info@artatcentral.com" />
+            </div>
+            <Button type="submit" className="sm:self-end" disabled={enquiryLoading}>
+              {enquiryLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Save
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,39 @@
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
 const Contact = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      subject: formData.get("subject") as string,
+      message: formData.get("message") as string,
+    };
+
+    if (!payload.name || !payload.email || !payload.message) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-enquiry", { body: payload });
+      if (error) throw error;
+      toast({ title: "Message sent", description: "We'll get back to you shortly." });
+      form.reset();
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message || "Please try again later.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen pt-32 md:pt-40">
       <div className="px-6 md:px-12">
@@ -47,16 +82,17 @@ const Contact = () => {
 
             <div>
               <p className="micro-text text-muted-foreground mb-8">Send a Message</p>
-              <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
-                <input type="text" placeholder="Name" className="input-editorial w-full" />
-                <input type="email" placeholder="Email" className="input-editorial w-full" />
-                <input type="text" placeholder="Subject" className="input-editorial w-full" />
-                <textarea placeholder="Message" rows={5} className="input-editorial w-full resize-none" />
+              <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+                <input type="text" name="name" placeholder="Name" className="input-editorial w-full" required />
+                <input type="email" name="email" placeholder="Email" className="input-editorial w-full" required />
+                <input type="text" name="subject" placeholder="Subject" className="input-editorial w-full" />
+                <textarea name="message" placeholder="Message" rows={5} className="input-editorial w-full resize-none" required />
                 <button
                   type="submit"
-                  className="micro-text border border-foreground text-foreground px-8 py-4 hover:bg-foreground hover:text-background transition-all duration-500 self-start mt-4"
+                  disabled={submitting}
+                  className="micro-text border border-foreground text-foreground px-8 py-4 hover:bg-foreground hover:text-background transition-all duration-500 self-start mt-4 disabled:opacity-50"
                 >
-                  Send Message
+                  {submitting ? "Sending..." : "Send Message"}
                 </button>
               </form>
             </div>

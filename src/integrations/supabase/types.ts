@@ -255,6 +255,27 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          enquiry_receiving_email: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enquiry_receiving_email?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enquiry_receiving_email?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
