@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -11,24 +11,35 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Reactively navigate once auth state confirms admin session
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      console.log("[Auth] Attempting login for:", email);
       const { error } = await signIn(email, password);
       if (error) {
+        console.error("[Auth] Login error:", error);
         toast({ title: "Login failed", description: error.message, variant: "destructive" });
         setLoading(false);
         return;
       }
-
+      console.log("[Auth] signIn resolved successfully — waiting for auth state to propagate…");
       toast({ title: "Welcome back" });
-      navigate("/admin");
+      // Don't navigate here — the useEffect above handles it once the
+      // AuthContext has fully processed onAuthStateChange + checkAdmin.
     } catch (err: any) {
+      console.error("[Auth] Unexpected error:", err);
       const msg = err?.message || "An unexpected error occurred. Check your network or API configuration.";
       toast({ title: "Authentication Error", description: msg, variant: "destructive" });
       setLoading(false);
