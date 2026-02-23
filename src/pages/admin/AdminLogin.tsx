@@ -18,15 +18,21 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
-    if (error) {
-      toast({ title: "Login failed", description: error.message, variant: "destructive" });
-      setLoading(false);
-      return;
-    }
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({ title: "Login failed", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
 
-    toast({ title: "Welcome back" });
-    navigate("/admin");
+      toast({ title: "Welcome back" });
+      navigate("/admin");
+    } catch (err: any) {
+      const msg = err?.message || "An unexpected error occurred. Check your network or API configuration.";
+      toast({ title: "Authentication Error", description: msg, variant: "destructive" });
+      setLoading(false);
+    }
   };
 
   return (

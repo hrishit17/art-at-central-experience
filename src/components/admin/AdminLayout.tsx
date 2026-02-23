@@ -9,6 +9,7 @@ const navItems = [
   { to: "/admin/exhibitions", icon: CalendarDays, label: "Exhibitions" },
   { to: "/admin/journal", icon: BookOpen, label: "Journal" },
   { to: "/admin/global", icon: Settings, label: "Global Sections" },
+  { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 const AdminLayout = () => {

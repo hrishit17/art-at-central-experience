@@ -55,7 +55,7 @@ const About = () => {
       </section>
 
       {/* Heritage */}
-      <section className="px-6 md:px-12 py-24 md:py-40 max-w-4xl">
+      <section className="px-6 md:px-12 py-12 md:py-20 max-w-4xl">
         <h2 className="editorial-heading text-foreground text-4xl md:text-6xl mb-12">
           Wild by Nature Global
         </h2>
@@ -68,7 +68,7 @@ const About = () => {
       </section>
 
       {/* Timeline */}
-      <section className="px-6 md:px-12 py-24 md:py-40 border-t border-border">
+      <section className="px-6 md:px-12 py-12 md:py-20 border-t border-border">
         <p className="micro-text text-muted-foreground mb-4">Heritage</p>
         <h2 className="editorial-heading text-foreground text-4xl md:text-6xl mb-16">Our Journey</h2>
 
@@ -89,7 +89,7 @@ const About = () => {
       </section>
 
       {/* Gallery Images with Film Grain */}
-      <section className="px-6 md:px-12 py-24 md:py-40">
+      <section className="px-6 md:px-12 py-12 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="overflow-hidden" data-cursor="art">
             <img src={galleryRoom1} alt="Gallery space" className="w-full aspect-[4/3] object-cover film-grain" />
@@ -101,7 +101,7 @@ const About = () => {
       </section>
 
       {/* Address & Location */}
-      <section className="px-6 md:px-12 py-24 md:py-40 border-t border-border">
+      <section className="px-6 md:px-12 py-12 md:py-20 border-t border-border">
         <p className="micro-text text-muted-foreground mb-4">Find Us</p>
         <h2 className="editorial-heading text-foreground text-4xl md:text-6xl mb-12">
           Visit the Gallery
