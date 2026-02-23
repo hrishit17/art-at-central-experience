@@ -11,6 +11,10 @@ const SmoothScroll = ({ children }: SmoothScrollProps) => {
   const location = useLocation();
 
   useEffect(() => {
+    // Disable Lenis smooth scroll on touch devices to prevent jitter
+    const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) return;
+
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

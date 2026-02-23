@@ -29,19 +29,22 @@ const UpcomingEvents = () => {
         );
       });
 
-      // Parallax on images
-      gsap.utils.toArray<HTMLElement>(".event-image").forEach((img) => {
-        gsap.to(img, {
-          yPercent: -15,
-          ease: "none",
-          scrollTrigger: {
-            trigger: img.parentElement,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1,
-          },
+      // Parallax on images — disable on touch devices
+      const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+      if (!isTouchDevice) {
+        gsap.utils.toArray<HTMLElement>(".event-image").forEach((img) => {
+          gsap.to(img, {
+            yPercent: -15,
+            ease: "none",
+            scrollTrigger: {
+              trigger: img.parentElement,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          });
         });
-      });
+      }
     }, sectionRef);
 
     return () => ctx.revert();
@@ -50,79 +53,32 @@ const UpcomingEvents = () => {
   return (
     <section ref={sectionRef} className="px-6 md:px-12 py-24 md:py-40">
       <p className="micro-text text-muted-foreground mb-4">Upcoming</p>
-      <h2 className="editorial-heading text-foreground text-5xl md:text-7xl mb-16 md:mb-24">
+      <h2 className="editorial-heading text-foreground mb-16 md:mb-24" style={{ fontSize: "clamp(2.5rem, 8vw, 5rem)" }}>
         Exhibitions
       </h2>
 
-      {/* Aligned Grid */}
-      <div className="grid grid-cols-12 gap-6 md:gap-8">
-        {/* Large Card */}
-        <div className="event-card col-span-12 md:col-span-7 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/5]">
-            <img
-              src={upcomingEvents[0].image}
-              alt={upcomingEvents[0].title}
-              loading="lazy"
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
-            />
-          </div>
-          <div className="mt-4">
-            <p className="micro-text text-muted-foreground">{upcomingEvents[0].category}</p>
-            <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-1">{upcomingEvents[0].title}</h3>
-            <p className="body-text text-sm text-muted-foreground mt-2">{upcomingEvents[0].date}</p>
-          </div>
-        </div>
-
-        {/* Small Card */}
-        <div className="event-card col-span-12 md:col-span-5 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/5]">
-            <img
-              src={upcomingEvents[1].image}
-              alt={upcomingEvents[1].title}
-              loading="lazy"
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
-            />
-          </div>
-          <div className="mt-4">
-            <p className="micro-text text-muted-foreground">{upcomingEvents[1].category}</p>
-            <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-1">{upcomingEvents[1].title}</h3>
-            <p className="body-text text-sm text-muted-foreground mt-2">{upcomingEvents[1].date}</p>
-          </div>
-        </div>
-
-        {/* Medium Card */}
-        <div className="event-card col-span-12 md:col-span-5 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/5]">
-            <img
-              src={upcomingEvents[2].image}
-              alt={upcomingEvents[2].title}
-              loading="lazy"
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
-            />
-          </div>
-          <div className="mt-4">
-            <p className="micro-text text-muted-foreground">{upcomingEvents[2].category}</p>
-            <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-1">{upcomingEvents[2].title}</h3>
-            <p className="body-text text-sm text-muted-foreground mt-2">{upcomingEvents[2].date}</p>
-          </div>
-        </div>
-
-        {/* Tall Card */}
-        <div className="event-card col-span-12 md:col-span-7 group" data-cursor="art">
-          <div className="overflow-hidden aspect-[4/5]">
-            <img
-              src={upcomingEvents[3].image}
-              alt={upcomingEvents[3].title}
-              loading="lazy"
-              className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
-            />
-          </div>
-          <div className="mt-4">
-            <p className="micro-text text-muted-foreground">{upcomingEvents[3].category}</p>
-            <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-1">{upcomingEvents[3].title}</h3>
-            <p className="body-text text-sm text-muted-foreground mt-2">{upcomingEvents[3].date}</p>
-          </div>
-        </div>
+      {/* Responsive Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+        {upcomingEvents.map((event, i) => {
+          const colSpan = i % 2 === 0 ? "md:col-span-7" : "md:col-span-5";
+          return (
+            <div key={event.id} className={`event-card col-span-1 ${colSpan} group`} data-cursor="art">
+              <div className="overflow-hidden aspect-[4/5]">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  loading="lazy"
+                  className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
+                />
+              </div>
+              <div className="mt-4">
+                <p className="micro-text text-muted-foreground">{event.category}</p>
+                <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-1">{event.title}</h3>
+                <p className="body-text text-sm text-muted-foreground mt-2">{event.date}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

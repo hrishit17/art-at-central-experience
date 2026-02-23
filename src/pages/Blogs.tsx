@@ -113,7 +113,7 @@ const Blogs = () => {
     <div className="min-h-screen pt-32 md:pt-40">
       <div className="px-6 md:px-12">
         <p className="micro-text text-muted-foreground mb-4">The</p>
-        <h1 className="editorial-heading text-foreground text-5xl md:text-8xl mb-16 md:mb-24">
+        <h1 className="editorial-heading text-foreground mb-16 md:mb-24" style={{ fontSize: "clamp(3rem, 10vw, 8rem)" }}>
           Journal
         </h1>
 

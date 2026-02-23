@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import gsap from "gsap";
 
 interface NavigationProps {
   onToggleFocusMode: () => void;
@@ -10,6 +11,8 @@ interface NavigationProps {
 const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuLinksRef = useRef<HTMLDivElement>(null);
 
   const links = [
     { path: "/", label: "Home" },
@@ -19,8 +22,26 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
     { path: "/contact", label: "Contact" },
   ];
 
-  // Determine if we're on a page with a dark hero (home, about)
   const isDarkHero = location.pathname === "/" || location.pathname === "/about";
+
+  // Animate mobile menu open/close
+  useEffect(() => {
+    if (!menuRef.current) return;
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+      gsap.fromTo(menuRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" });
+      if (menuLinksRef.current) {
+        gsap.fromTo(
+          menuLinksRef.current.children,
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", stagger: 0.07, delay: 0.15 }
+        );
+      }
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   return (
     <nav className="fixed top-0 left-0 w-full z-[9999]">
@@ -40,7 +61,7 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
         <Link to="/" className="relative z-[101]">
           <span
             className="micro-text tracking-[0.2em] transition-colors duration-500"
-            style={{ color: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }}
+            style={{ color: menuOpen ? 'hsl(0 0% 6%)' : isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }}
           >
             Art at Central
           </span>
@@ -84,7 +105,7 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
               key={i}
               className="block w-5 h-px transition-all duration-300"
               style={{
-                backgroundColor: isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)',
+                backgroundColor: menuOpen ? 'hsl(0 0% 6%)' : isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)',
                 transform: menuOpen && i === 0 ? 'rotate(45deg) translateY(3.5px)' :
                   menuOpen && i === 2 ? 'rotate(-45deg) translateY(-3.5px)' : 'none',
                 opacity: menuOpen && i === 1 ? 0 : 1,
@@ -94,28 +115,34 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Fullscreen Mobile Menu */}
       {menuOpen && (
-        <div className="fixed inset-0 bg-background z-[100] flex flex-col items-center justify-center gap-8">
-          {links.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              onClick={() => setMenuOpen(false)}
-              className="editorial-heading text-4xl text-foreground"
+        <div
+          ref={menuRef}
+          className="fixed inset-0 bg-background z-[100] flex flex-col items-center justify-center"
+          style={{ opacity: 0 }}
+        >
+          <div ref={menuLinksRef} className="flex flex-col items-center gap-8">
+            {links.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setMenuOpen(false)}
+                className="editorial-heading text-4xl text-foreground hover:text-muted-foreground transition-colors duration-300"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <button
+              onClick={() => {
+                onToggleFocusMode();
+                setMenuOpen(false);
+              }}
+              className="micro-text text-muted-foreground mt-8 hover:text-foreground transition-colors"
             >
-              {link.label}
-            </Link>
-          ))}
-          <button
-            onClick={() => {
-              onToggleFocusMode();
-              setMenuOpen(false);
-            }}
-            className="micro-text text-muted-foreground mt-8"
-          >
-            {isFocusMode ? "Light Mode" : "Focus Mode"}
-          </button>
+              {isFocusMode ? "Light Mode" : "Focus Mode"}
+            </button>
+          </div>
         </div>
       )}
     </nav>
