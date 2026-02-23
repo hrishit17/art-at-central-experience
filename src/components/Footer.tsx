@@ -54,7 +54,16 @@ const Footer = () => {
             © 2026 Art at Central. A division of Wild by Nature Global.
           </p>
           <p className="micro-text text-muted-foreground mt-2 md:mt-0">
-            All rights reserved.
+            All rights reserved to{" "}
+            <a
+              href="https://wildbynatureglobal.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground/60 transition-colors underline underline-offset-2"
+            >
+              Wild by Nature Global
+            </a>
+            .
           </p>
         </div>
       </div>
