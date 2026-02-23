@@ -32,9 +32,12 @@ const Contact = () => {
             <div className="mb-16">
               <p className="micro-text text-muted-foreground mb-6">Visit Us</p>
               <p className="font-serif text-foreground text-3xl md:text-5xl leading-tight">
-                123 Central Avenue<br />
-                Cape Town, 8001<br />
-                South Africa
+                Building No. 112, 4th Floor,<br />
+                Lohia House Building,<br />
+                Near By ICICI Bank,<br />
+                Chittaranjan Avenue (Central Ave),<br />
+                Kolkata Central, Kolkata-700073,<br />
+                West Bengal
               </p>
               <div className="mt-8 flex flex-col gap-2">
                 <p className="body-text text-muted-foreground">info@artatcentral.com</p>

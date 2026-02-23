@@ -27,9 +27,8 @@ const Footer = () => {
           <div>
             <p className="micro-text text-muted-foreground mb-4">Social</p>
             <div className="flex flex-col gap-2">
-              <a href="#" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Instagram</a>
-              <a href="#" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">Twitter / X</a>
-              <a href="#" className="body-text text-sm text-foreground hover:text-muted-foreground transition-colors">LinkedIn</a>
+              <a href="https://www.facebook.com/share/1CSgLALKed/" target="_blank" rel="noopener noreferrer" className="body-text text-sm text-foreground hover:text-muted-foreground hover:translate-x-1 transition-all duration-300">Facebook</a>
+              <a href="https://www.instagram.com/wild_bynature_official?igsh=dHM2dGdpcG01MHJt" target="_blank" rel="noopener noreferrer" className="body-text text-sm text-foreground hover:text-muted-foreground hover:translate-x-1 transition-all duration-300">Instagram</a>
             </div>
           </div>
           <div>

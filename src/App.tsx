@@ -18,6 +18,7 @@ import HeroManager from "./pages/admin/HeroManager";
 import ExhibitionsManager from "./pages/admin/ExhibitionsManager";
 import JournalManager from "./pages/admin/JournalManager";
 import GlobalSectionsManager from "./pages/admin/GlobalSectionsManager";
+import AdminSettings from "./pages/admin/AdminSettings";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="exhibitions" element={<ExhibitionsManager />} />
               <Route path="journal" element={<JournalManager />} />
               <Route path="global" element={<GlobalSectionsManager />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
