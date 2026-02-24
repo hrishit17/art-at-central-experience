@@ -15,6 +15,15 @@ interface HeroMedia {
   created_at: string;
 }
 
+const extractStoragePath = (url: string, bucket: string): string | null => {
+  try {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+  } catch { return null; }
+};
+
 const HeroManager = () => {
   const [items, setItems] = useState<HeroMedia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +52,6 @@ const HeroManager = () => {
 
   const toggleActive = async (id: string, active: boolean) => {
     if (active) {
-      // Deactivate all others first
       await supabase.from("hero_media" as any).update({ is_active: false } as any).neq("id", id);
     }
     await supabase.from("hero_media" as any).update({ is_active: active } as any).eq("id", id);
@@ -51,7 +59,11 @@ const HeroManager = () => {
     fetchItems();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, mediaUrl: string) => {
+    const storagePath = extractStoragePath(mediaUrl, "hero-media");
+    if (storagePath) {
+      await supabase.storage.from("hero-media").remove([storagePath]);
+    }
     await supabase.from("hero_media" as any).delete().eq("id", id);
     toast({ title: "Hero media deleted" });
     fetchItems();
@@ -80,7 +92,7 @@ const HeroManager = () => {
               {item.media_type === "video" ? (
                 <video src={item.media_url} className="w-full h-full object-cover" muted />
               ) : (
-                <img src={item.media_url} alt="" className="w-full h-full object-cover" />
+                <img src={item.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -92,7 +104,7 @@ const HeroManager = () => {
                 <span className="text-xs text-muted-foreground">{item.is_active ? "Active" : "Inactive"}</span>
                 <Switch checked={item.is_active} onCheckedChange={(v) => toggleActive(item.id, v)} />
               </div>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id, item.media_url)}>
                 <Trash2 size={14} className="text-destructive" />
               </Button>
             </div>

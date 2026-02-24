@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Loader2, X } from "lucide-react";
 import ImageUpload from "@/components/admin/ImageUpload";
-import ResolutionBadge from "@/components/admin/ResolutionBadge";
 import { toast } from "@/hooks/use-toast";
 
 interface Exhibition {
@@ -20,6 +19,15 @@ interface Exhibition {
   category: string | null;
   status: string;
 }
+
+const extractStoragePath = (url: string, bucket: string): string | null => {
+  try {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+  } catch { return null; }
+};
 
 const ExhibitionsManager = () => {
   const [items, setItems] = useState<Exhibition[]>([]);
@@ -83,7 +91,11 @@ const ExhibitionsManager = () => {
     fetchItems();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, coverUrl: string | null) => {
+    if (coverUrl) {
+      const storagePath = extractStoragePath(coverUrl, "exhibitions");
+      if (storagePath) await supabase.storage.from("exhibitions").remove([storagePath]);
+    }
     await supabase.from("exhibitions" as any).delete().eq("id", id);
     toast({ title: "Exhibition deleted" });
     fetchItems();
@@ -164,7 +176,7 @@ const ExhibitionsManager = () => {
           <div key={item.id} className="flex items-center gap-4 border border-border rounded-md p-4">
             {item.cover_image_url && (
               <div className="w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
-                <img src={item.cover_image_url} alt="" className="w-full h-full object-cover" />
+                <img src={item.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -179,7 +191,7 @@ const ExhibitionsManager = () => {
                 {item.status === "archived" ? "Restore" : "Archive"}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>Edit</Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id, item.cover_image_url)}>
                 <Trash2 size={14} className="text-destructive" />
               </Button>
             </div>

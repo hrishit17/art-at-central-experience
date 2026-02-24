@@ -10,20 +10,24 @@ const Hero = memo(() => {
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    const tl = gsap.timeline({ delay: 0.3 });
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ delay: 0.3 });
 
-    if (imageRef.current) {
-      gsap.fromTo(imageRef.current, { scale: 1.15 }, { scale: 1, duration: 3, ease: "power2.out" });
-    }
-    if (line1Ref.current) {
-      tl.fromTo(line1Ref.current.children, { yPercent: 110 }, { yPercent: 0, duration: 1.2, ease: "power4.out", stagger: 0.1 }, 0.5);
-    }
-    if (line2Ref.current) {
-      tl.fromTo(line2Ref.current.children, { yPercent: 110 }, { yPercent: 0, duration: 1.2, ease: "power4.out", stagger: 0.1 }, 0.7);
-    }
-    if (subtitleRef.current) {
-      tl.fromTo(subtitleRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 1.4);
-    }
+      if (imageRef.current) {
+        gsap.fromTo(imageRef.current, { scale: 1.15 }, { scale: 1, duration: 3, ease: "power2.out" });
+      }
+      if (line1Ref.current) {
+        tl.fromTo(line1Ref.current.children, { yPercent: 110 }, { yPercent: 0, duration: 1.2, ease: "power4.out", stagger: 0.1 }, 0.5);
+      }
+      if (line2Ref.current) {
+        tl.fromTo(line2Ref.current.children, { yPercent: 110 }, { yPercent: 0, duration: 1.2, ease: "power4.out", stagger: 0.1 }, 0.7);
+      }
+      if (subtitleRef.current) {
+        tl.fromTo(subtitleRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 1.4);
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (

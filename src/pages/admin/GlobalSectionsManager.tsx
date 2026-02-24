@@ -26,18 +26,25 @@ interface GalleryRoom {
   sort_order: number;
 }
 
+const extractStoragePath = (url: string, bucket: string): string | null => {
+  try {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+  } catch { return null; }
+};
+
 const GlobalSectionsManager = () => {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [rooms, setRooms] = useState<GalleryRoom[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Artist form
   const [artistForm, setArtistForm] = useState({ name: "", bio: "", quote: "", portrait_url: "" });
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [showArtistForm, setShowArtistForm] = useState(false);
   const [savingArtist, setSavingArtist] = useState(false);
 
-  // Room form
   const [roomForm, setRoomForm] = useState({ name: "", description: "", image_url: "" });
   const [editingRoom, setEditingRoom] = useState<GalleryRoom | null>(null);
   const [showRoomForm, setShowRoomForm] = useState(false);
@@ -86,7 +93,11 @@ const GlobalSectionsManager = () => {
     fetchData();
   };
 
-  const deleteArtist = async (id: string) => {
+  const deleteArtist = async (id: string, portraitUrl: string | null) => {
+    if (portraitUrl) {
+      const path = extractStoragePath(portraitUrl, "artists");
+      if (path) await supabase.storage.from("artists").remove([path]);
+    }
     await supabase.from("artist_of_month" as any).delete().eq("id", id);
     toast({ title: "Artist deleted" });
     fetchData();
@@ -116,7 +127,11 @@ const GlobalSectionsManager = () => {
     fetchData();
   };
 
-  const deleteRoom = async (id: string) => {
+  const deleteRoom = async (id: string, imageUrl: string | null) => {
+    if (imageUrl) {
+      const path = extractStoragePath(imageUrl, "gallery-rooms");
+      if (path) await supabase.storage.from("gallery-rooms").remove([path]);
+    }
     await supabase.from("gallery_rooms" as any).delete().eq("id", id);
     toast({ title: "Room deleted" });
     fetchData();
@@ -176,7 +191,7 @@ const GlobalSectionsManager = () => {
             <div key={a.id} className="flex items-center gap-4 border border-border rounded-md p-4">
               {a.portrait_url && (
                 <div className="w-12 h-14 rounded overflow-hidden bg-muted flex-shrink-0">
-                  <img src={a.portrait_url} alt="" className="w-full h-full object-cover" />
+                  <img src={a.portrait_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -188,7 +203,7 @@ const GlobalSectionsManager = () => {
                 <Switch checked={a.is_active} onCheckedChange={(v) => toggleArtistActive(a.id, v)} />
               </div>
               <Button variant="ghost" size="sm" onClick={() => { setArtistForm({ name: a.name, bio: a.bio ?? "", quote: a.quote ?? "", portrait_url: a.portrait_url ?? "" }); setEditingArtist(a); setShowArtistForm(true); }}>Edit</Button>
-              <Button variant="ghost" size="icon" onClick={() => deleteArtist(a.id)}>
+              <Button variant="ghost" size="icon" onClick={() => deleteArtist(a.id, a.portrait_url)}>
                 <Trash2 size={14} className="text-destructive" />
               </Button>
             </div>
@@ -242,7 +257,7 @@ const GlobalSectionsManager = () => {
             <div key={r.id} className="flex items-center gap-4 border border-border rounded-md p-4">
               {r.image_url && (
                 <div className="w-20 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
-                  <img src={r.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={r.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -250,7 +265,7 @@ const GlobalSectionsManager = () => {
                 <p className="text-xs text-muted-foreground">{r.description}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => { setRoomForm({ name: r.name, description: r.description ?? "", image_url: r.image_url ?? "" }); setEditingRoom(r); setShowRoomForm(true); }}>Edit</Button>
-              <Button variant="ghost" size="icon" onClick={() => deleteRoom(r.id)}>
+              <Button variant="ghost" size="icon" onClick={() => deleteRoom(r.id, r.image_url)}>
                 <Trash2 size={14} className="text-destructive" />
               </Button>
             </div>
