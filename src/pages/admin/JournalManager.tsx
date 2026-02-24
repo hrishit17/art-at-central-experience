@@ -19,6 +19,15 @@ interface JournalPost {
   publish_date: string | null;
 }
 
+const extractStoragePath = (url: string, bucket: string): string | null => {
+  try {
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    return url.substring(idx + marker.length);
+  } catch { return null; }
+};
+
 const JournalManager = () => {
   const [items, setItems] = useState<JournalPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +90,11 @@ const JournalManager = () => {
     fetchItems();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, thumbnailUrl: string | null) => {
+    if (thumbnailUrl) {
+      const storagePath = extractStoragePath(thumbnailUrl, "journal");
+      if (storagePath) await supabase.storage.from("journal").remove([storagePath]);
+    }
     await supabase.from("journal_posts" as any).delete().eq("id", id);
     toast({ title: "Post deleted" });
     fetchItems();
@@ -167,7 +180,7 @@ const JournalManager = () => {
           <div key={item.id} className="flex items-center gap-4 border border-border rounded-md p-4">
             {item.thumbnail_url && (
               <div className="w-20 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
-                <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -179,7 +192,7 @@ const JournalManager = () => {
             </Badge>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>Edit</Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id, item.thumbnail_url)}>
                 <Trash2 size={14} className="text-destructive" />
               </Button>
             </div>

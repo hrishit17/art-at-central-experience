@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import gsap from "gsap";
+import logo from "@/assets/logo.png";
 
 interface NavigationProps {
   onToggleFocusMode: () => void;
@@ -24,7 +25,6 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
 
   const isDarkHero = location.pathname === "/" || location.pathname === "/about";
 
-  // Animate mobile menu open/close
   useEffect(() => {
     if (!menuRef.current) return;
     if (menuOpen) {
@@ -46,25 +46,21 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
   return (
     <nav className="fixed top-0 left-0 w-full z-[9999]">
       <div
-        className="flex items-center justify-between px-6 md:px-12 py-5 transition-all duration-500"
+        className="flex items-center justify-between px-6 md:px-12 py-3 transition-all duration-500"
         style={{
-          backgroundColor: isDarkHero
-            ? 'rgba(0, 0, 0, 0.25)'
-            : 'rgba(255, 255, 255, 0.85)',
+          backgroundColor: isDarkHero ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(16px) saturate(180%)',
           WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-          borderBottom: isDarkHero
-            ? '1px solid rgba(255, 255, 255, 0.08)'
-            : '1px solid rgba(0, 0, 0, 0.05)',
+          borderBottom: isDarkHero ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.05)',
         }}
       >
         <Link to="/" className="relative z-[101]">
-          <span
-            className="micro-text tracking-[0.2em] transition-colors duration-500"
-            style={{ color: menuOpen ? 'hsl(0 0% 6%)' : isDarkHero ? '#ffffff' : 'hsl(0 0% 6%)' }}
-          >
-            Art at Central
-          </span>
+          <img
+            src={logo}
+            alt="Art at Central"
+            className="h-12 md:h-14 w-auto object-contain transition-all duration-500"
+            style={{ filter: menuOpen ? 'none' : isDarkHero ? 'invert(1)' : 'none' }}
+          />
         </Link>
 
         {/* Desktop Nav */}
@@ -134,10 +130,7 @@ const Navigation = ({ onToggleFocusMode, isFocusMode }: NavigationProps) => {
               </Link>
             ))}
             <button
-              onClick={() => {
-                onToggleFocusMode();
-                setMenuOpen(false);
-              }}
+              onClick={() => { onToggleFocusMode(); setMenuOpen(false); }}
               className="micro-text text-muted-foreground mt-8 hover:text-foreground transition-colors"
             >
               {isFocusMode ? "Light Mode" : "Focus Mode"}

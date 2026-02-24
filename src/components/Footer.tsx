@@ -1,19 +1,15 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 const Footer = () => {
   return (
     <footer className="border-t border-border">
       <div className="px-6 md:px-12 py-12">
-        {/* Massive Title */}
-        <h2
-          className="editorial-heading text-foreground leading-none select-none"
-          style={{ fontSize: "clamp(3rem, 12vw, 12rem)" }}
-        >
-          ART AT CENTRAL
-        </h2>
+        {/* Logo */}
+        <img src={logo} alt="Art at Central" className="h-24 md:h-32 w-auto object-contain mb-8" />
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-8">
           <div>
             <p className="micro-text text-muted-foreground mb-4">Navigate</p>
             <div className="flex flex-col gap-2">
@@ -55,15 +51,9 @@ const Footer = () => {
           </p>
           <p className="micro-text text-muted-foreground mt-2 md:mt-0">
             All rights reserved to{" "}
-            <a
-              href="https://wildbynatureglobal.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground/60 transition-colors underline underline-offset-2"
-            >
+            <a href="https://wildbynatureglobal.com/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground/60 transition-colors underline underline-offset-2">
               Wild by Nature Global
-            </a>
-            .
+            </a>.
           </p>
         </div>
       </div>
