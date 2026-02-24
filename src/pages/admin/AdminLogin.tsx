@@ -28,28 +28,24 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      console.log("[Auth] Attempting login for:", email);
       const { error } = await signIn(email, password);
       if (error) {
-        console.error("[Auth] Login error:", error);
         toast({
           title: "Wrong password, please try again.",
           description: error.message,
           variant: "destructive",
         });
-        setLoading(false);
         return;
       }
-      console.log("[Auth] signIn resolved successfully — waiting for auth state to propagate…");
       toast({ title: "Welcome back" });
       // Navigation handled by useEffect above
     } catch (err: any) {
-      console.error("[Auth] Unexpected error:", err);
       toast({
         title: "Authentication Error",
         description: err?.message || "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
