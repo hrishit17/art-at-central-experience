@@ -21,17 +21,21 @@ const AdminSettings = () => {
   const [enquiryLoading, setEnquiryLoading] = useState(false);
   const [settingsId, setSettingsId] = useState<string | null>(null);
 
-  // Fetch current enquiry email
   useEffect(() => {
     const fetchSettings = async () => {
-      const { data } = await supabase
-        .from("site_settings")
-        .select("id, enquiry_receiving_email")
-        .limit(1)
-        .single();
-      if (data) {
-        setEnquiryEmail(data.enquiry_receiving_email);
-        setSettingsId(data.id);
+      try {
+        const { data, error } = await supabase
+          .from("site_settings")
+          .select("id, enquiry_receiving_email")
+          .limit(1)
+          .single();
+        if (error) throw error;
+        if (data) {
+          setEnquiryEmail(data.enquiry_receiving_email);
+          setSettingsId(data.id);
+        }
+      } catch (err: any) {
+        toast({ title: "Failed to load settings", description: err.message, variant: "destructive" });
       }
     };
     fetchSettings();
@@ -103,7 +107,6 @@ const AdminSettings = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Email Card */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Change Email</CardTitle>
@@ -123,7 +126,6 @@ const AdminSettings = () => {
           </CardContent>
         </Card>
 
-        {/* Password Card */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Change Password</CardTitle>
@@ -148,7 +150,6 @@ const AdminSettings = () => {
         </Card>
       </div>
 
-      {/* Enquiry Email Configuration */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Contact Form Configuration</CardTitle>

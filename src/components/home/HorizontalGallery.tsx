@@ -1,15 +1,45 @@
-import { memo, useLayoutEffect, useRef } from "react";
+import { memo, useLayoutEffect, useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { galleryRooms } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { galleryRooms as fallbackRooms } from "@/data/mockData";
 
 gsap.registerPlugin(ScrollTrigger);
+
+interface GalleryRoom {
+  id: string;
+  name: string;
+  image_url: string | null;
+  description: string | null;
+}
 
 const HorizontalGallery = memo(() => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const [rooms, setRooms] = useState<GalleryRoom[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("gallery_rooms")
+      .select("id, name, image_url, description")
+      .order("sort_order", { ascending: true })
+      .limit(10)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setRooms(data as GalleryRoom[]);
+        }
+        setLoaded(true);
+      });
+  }, []);
+
+  // Use DB rooms or fallback
+  const displayRooms = rooms.length > 0
+    ? rooms.map(r => ({ id: r.id, name: r.name, image: r.image_url || "", description: r.description || "" }))
+    : fallbackRooms;
 
   useLayoutEffect(() => {
+    if (!loaded) return;
     const ctx = gsap.context(() => {
       const track = trackRef.current;
       const section = sectionRef.current;
@@ -32,7 +62,9 @@ const HorizontalGallery = memo(() => {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [loaded, displayRooms]);
+
+  if (!loaded) return null;
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden h-screen">
@@ -44,7 +76,7 @@ const HorizontalGallery = memo(() => {
       </div>
 
       <div ref={trackRef} className="flex items-center h-full gap-8 pl-6 md:pl-12 pt-24" style={{ width: "fit-content" }}>
-        {galleryRooms.map((room) => (
+        {displayRooms.map((room) => (
           <div key={room.id} className="relative flex-shrink-0 h-[70vh] group" style={{ width: "70vw" }} data-cursor="art">
             <img src={room.image} alt={room.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] will-change-transform" />
             <div className="absolute bottom-0 left-0 p-6 md:p-8">

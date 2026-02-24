@@ -1,7 +1,18 @@
+import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LayoutDashboard, Image, CalendarDays, BookOpen, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -16,10 +27,13 @@ const navItems = [
 const AdminLayout = () => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    // Optimistic: navigate immediately, sign out in background
+    setShowSignOutDialog(false);
     navigate("/admin/login");
+    signOut();
   };
 
   return (
@@ -51,7 +65,7 @@ const AdminLayout = () => {
 
         <div className="p-4 border-t border-border space-y-3">
           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={handleSignOut}>
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => setShowSignOutDialog(true)}>
             <LogOut size={14} />
             Sign out
           </Button>
@@ -63,6 +77,21 @@ const AdminLayout = () => {
           <Outlet />
         </div>
       </main>
+
+      <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be redirected to the login page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOut}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
