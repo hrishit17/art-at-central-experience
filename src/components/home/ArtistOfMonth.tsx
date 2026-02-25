@@ -28,25 +28,36 @@ const ArtistOfMonth = memo(() => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("artist_of_month")
-      .select("id, name, portrait_url, bio, quote")
-      .eq("is_active", true)
-      .limit(1)
-      .maybeSingle()
-      .then(async ({ data }) => {
-        if (data) {
-          setArtist(data as ArtistData);
-          const { data: worksData } = await supabase
-            .from("artist_works")
-            .select("id, title, image_url, year")
-            .eq("artist_id", (data as ArtistData).id)
-            .order("sort_order", { ascending: true })
-            .limit(4);
-          setWorks((worksData as ArtistWork[]) ?? []);
-        }
-        setLoaded(true);
-      });
+    const fetchArtist = async () => {
+      const { data } = await supabase
+        .from("artist_of_month")
+        .select("id, name, portrait_url, bio, quote")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setArtist(data as ArtistData);
+        const { data: worksData } = await supabase
+          .from("artist_works")
+          .select("id, title, image_url, year")
+          .eq("artist_id", (data as ArtistData).id)
+          .order("sort_order", { ascending: true })
+          .limit(4);
+        setWorks((worksData as ArtistWork[]) ?? []);
+      }
+      setLoaded(true);
+    };
+
+    fetchArtist();
+
+    const channel = supabase
+      .channel("artist-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "artist_of_month" }, fetchArtist)
+      .on("postgres_changes", { event: "*", schema: "public", table: "artist_works" }, fetchArtist)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
@@ -60,7 +71,6 @@ const ArtistOfMonth = memo(() => {
     return () => ctx.revert();
   }, [loaded]);
 
-  // Use DB data or fallback
   const displayArtist = artist || {
     name: fallbackArtist.name,
     portrait_url: fallbackArtist.portrait,
@@ -81,7 +91,7 @@ const ArtistOfMonth = memo(() => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
         <div className="md:sticky md:top-24 md:self-start" data-cursor="art">
           <div className="overflow-hidden">
-            <img src={displayArtist.portrait_url || ""} alt={displayArtist.name} loading="lazy" className="w-full aspect-[3/4] object-cover" />
+            <img src={displayArtist.portrait_url || ""} alt={displayArtist.name} loading="lazy" decoding="async" className="w-full aspect-[3/4] object-cover" />
           </div>
           <h3 className="editorial-heading text-foreground text-3xl md:text-5xl mt-6">{displayArtist.name}</h3>
         </div>
@@ -99,7 +109,7 @@ const ArtistOfMonth = memo(() => {
               {displayWorks.map((work, i) => (
                 <div key={i} className="group" data-cursor="art">
                   <div className="overflow-hidden aspect-square">
-                    <img src={work.image} alt={work.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
+                    <img src={work.image} alt={work.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
                   </div>
                   <p className="body-text text-sm text-foreground mt-2">{work.title}</p>
                   <p className="micro-text text-muted-foreground">{work.year}</p>

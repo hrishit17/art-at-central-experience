@@ -22,20 +22,10 @@ const About = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>(".timeline-item").forEach((item) => {
-        gsap.fromTo(
-          item,
-          { opacity: 0, x: -30 },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.8,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: item,
-              start: "top 80%",
-            },
-          }
-        );
+        gsap.fromTo(item, { opacity: 0, x: -30 }, {
+          opacity: 1, x: 0, duration: 0.8, ease: "power3.out",
+          scrollTrigger: { trigger: item, start: "top 80%" },
+        });
       });
     }, sectionRef);
     return () => ctx.revert();
@@ -43,9 +33,8 @@ const About = () => {
 
   return (
     <div ref={sectionRef}>
-      {/* Hero */}
       <section className="h-[70vh] relative overflow-hidden">
-        <img src={heroGallery} alt="Gallery" className="w-full h-full object-cover" />
+        <img src={heroGallery} alt="Gallery" loading="eager" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-foreground/40 flex items-end px-6 md:px-12 pb-16">
           <div>
             <p className="micro-text text-primary-foreground/70 mb-4">Our Story</p>
@@ -92,10 +81,10 @@ const About = () => {
       <section className="px-6 md:px-12 py-12 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="overflow-hidden" data-cursor="art">
-            <img src={galleryRoom1} alt="Gallery space" className="w-full aspect-[4/3] object-cover film-grain" />
+            <img src={galleryRoom1} alt="Gallery space" loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover film-grain" />
           </div>
           <div className="overflow-hidden md:mt-24" data-cursor="art">
-            <img src={galleryRoom2} alt="Gallery space" className="w-full aspect-[4/3] object-cover film-grain" />
+            <img src={galleryRoom2} alt="Gallery space" loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover film-grain" />
           </div>
         </div>
       </section>

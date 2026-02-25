@@ -20,20 +20,30 @@ const HorizontalGallery = memo(() => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("gallery_rooms")
-      .select("id, name, image_url, description")
-      .order("sort_order", { ascending: true })
-      .limit(10)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setRooms(data as GalleryRoom[]);
-        }
-        setLoaded(true);
-      });
+    const fetch = () => {
+      supabase
+        .from("gallery_rooms")
+        .select("id, name, image_url, description")
+        .order("sort_order", { ascending: true })
+        .limit(10)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            setRooms(data as GalleryRoom[]);
+          }
+          setLoaded(true);
+        });
+    };
+
+    fetch();
+
+    const channel = supabase
+      .channel("gallery-rooms-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "gallery_rooms" }, fetch)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Use DB rooms or fallback
   const displayRooms = rooms.length > 0
     ? rooms.map(r => ({ id: r.id, name: r.name, image: r.image_url || "", description: r.description || "" }))
     : fallbackRooms;
@@ -78,7 +88,7 @@ const HorizontalGallery = memo(() => {
       <div ref={trackRef} className="flex items-center h-full gap-8 pl-6 md:pl-12 pt-24" style={{ width: "fit-content" }}>
         {displayRooms.map((room) => (
           <div key={room.id} className="relative flex-shrink-0 h-[70vh] group" style={{ width: "70vw" }} data-cursor="art">
-            <img src={room.image} alt={room.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] will-change-transform" />
+            <img src={room.image} alt={room.name} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] will-change-transform" />
             <div className="absolute bottom-0 left-0 p-6 md:p-8">
               <h3 className="font-serif text-2xl md:text-3xl text-primary-foreground">{room.name}</h3>
               <p className="body-text text-sm text-primary-foreground/70 mt-1 max-w-xs">{room.description}</p>

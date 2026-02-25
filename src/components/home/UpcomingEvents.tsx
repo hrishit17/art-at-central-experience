@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState, useMemo } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,16 +22,27 @@ const UpcomingEvents = memo(() => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("exhibitions")
-      .select("id, title, category, start_date, end_date, cover_image_url, description")
-      .in("status", ["upcoming", "current"])
-      .order("start_date", { ascending: true })
-      .limit(6)
-      .then(({ data }) => {
-        setExhibitions((data as Exhibition[]) ?? []);
-        setLoading(false);
-      });
+    const fetch = () => {
+      supabase
+        .from("exhibitions")
+        .select("id, title, category, start_date, end_date, cover_image_url, description")
+        .in("status", ["upcoming", "current"])
+        .order("start_date", { ascending: true })
+        .limit(6)
+        .then(({ data }) => {
+          setExhibitions((data as Exhibition[]) ?? []);
+          setLoading(false);
+        });
+    };
+
+    fetch();
+
+    const channel = supabase
+      .channel("exhibitions-home")
+      .on("postgres_changes", { event: "*", schema: "public", table: "exhibitions" }, fetch)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const formatted = useMemo(() =>
@@ -69,8 +80,18 @@ const UpcomingEvents = memo(() => {
 
   if (loading) {
     return (
-      <section className="px-6 md:px-12 py-24 md:py-40 flex justify-center">
-        <Loader2 className="animate-spin text-muted-foreground" />
+      <section className="px-6 md:px-12 py-24 md:py-40">
+        <Skeleton className="h-6 w-24 mb-4" />
+        <Skeleton className="h-16 w-64 mb-16" />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {[7, 5, 7, 5].map((span, i) => (
+            <div key={i} className={`col-span-1 md:col-span-${span}`}>
+              <Skeleton className="aspect-[4/5] w-full" />
+              <Skeleton className="h-4 w-32 mt-4" />
+              <Skeleton className="h-8 w-48 mt-2" />
+            </div>
+          ))}
+        </div>
       </section>
     );
   }
@@ -90,7 +111,7 @@ const UpcomingEvents = memo(() => {
             <div key={event.id} className={`event-card col-span-1 ${colSpan} group`} data-cursor="art">
               <div className="overflow-hidden aspect-[4/5]">
                 {event.cover_image_url ? (
-                  <img src={event.cover_image_url} alt={event.title} loading="lazy" className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
+                  <img src={event.cover_image_url} alt={event.title} loading="lazy" decoding="async" className="event-image w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
                     <span className="text-muted-foreground text-sm">No Image</span>

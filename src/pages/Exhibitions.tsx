@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState, useMemo } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,15 +23,26 @@ const Exhibitions = memo(() => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("exhibitions")
-      .select("id, title, category, start_date, end_date, cover_image_url, description, status")
-      .order("start_date", { ascending: false })
-      .limit(20)
-      .then(({ data }) => {
-        setExhibitions((data as Exhibition[]) ?? []);
-        setLoading(false);
-      });
+    const fetch = () => {
+      supabase
+        .from("exhibitions")
+        .select("id, title, category, start_date, end_date, cover_image_url, description, status")
+        .order("start_date", { ascending: false })
+        .limit(20)
+        .then(({ data }) => {
+          setExhibitions((data as Exhibition[]) ?? []);
+          setLoading(false);
+        });
+    };
+
+    fetch();
+
+    const channel = supabase
+      .channel("exhibitions-page")
+      .on("postgres_changes", { event: "*", schema: "public", table: "exhibitions" }, fetch)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const { current, past } = useMemo(() => {
@@ -57,12 +68,22 @@ const Exhibitions = memo(() => {
       });
     }, gridRef);
     return () => ctx.revert();
-  }, [loading]);
+  }, [loading, exhibitions]);
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 flex justify-center">
-        <Loader2 className="animate-spin text-muted-foreground" />
+      <div className="min-h-screen pt-32 md:pt-40 px-6 md:px-12">
+        <Skeleton className="h-6 w-24 mb-4" />
+        <Skeleton className="h-20 w-72 mb-16" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i}>
+              <Skeleton className="aspect-[4/5] w-full" />
+              <Skeleton className="h-4 w-32 mt-4" />
+              <Skeleton className="h-8 w-48 mt-2" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -81,7 +102,7 @@ const Exhibitions = memo(() => {
               <div key={event.id} className="exhibit-card group" data-cursor="art">
                 <div className="overflow-hidden aspect-[4/5]">
                   {event.cover_image_url ? (
-                    <img src={event.cover_image_url} alt={event.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
+                    <img src={event.cover_image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
                   ) : (
                     <div className="w-full h-full bg-muted" />
                   )}
@@ -106,7 +127,7 @@ const Exhibitions = memo(() => {
                 <div key={exhibit.id} className="exhibit-card group" data-cursor="art">
                   <div className="overflow-hidden aspect-[4/5]">
                     {exhibit.cover_image_url ? (
-                      <img src={exhibit.cover_image_url} alt={exhibit.title} loading="lazy" className="w-full h-full object-cover film-grain transition-transform duration-700 group-hover:scale-105 will-change-transform" />
+                      <img src={exhibit.cover_image_url} alt={exhibit.title} loading="lazy" decoding="async" className="w-full h-full object-cover film-grain transition-transform duration-700 group-hover:scale-105 will-change-transform" />
                     ) : (
                       <div className="w-full h-full bg-muted" />
                     )}
