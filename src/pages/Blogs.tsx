@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalPost {
   id: string;
@@ -19,16 +19,27 @@ const Blogs = memo(() => {
   const [readProgress, setReadProgress] = useState(0);
 
   useEffect(() => {
-    supabase
-      .from("journal_posts")
-      .select("id, title, content, publish_date, author, thumbnail_url, status")
-      .eq("status", "published")
-      .order("publish_date", { ascending: false })
-      .limit(10)
-      .then(({ data }) => {
-        setPosts((data as JournalPost[]) ?? []);
-        setLoading(false);
-      });
+    const fetch = () => {
+      supabase
+        .from("journal_posts")
+        .select("id, title, content, publish_date, author, thumbnail_url, status")
+        .eq("status", "published")
+        .order("publish_date", { ascending: false })
+        .limit(10)
+        .then(({ data }) => {
+          setPosts((data as JournalPost[]) ?? []);
+          setLoading(false);
+        });
+    };
+
+    fetch();
+
+    const channel = supabase
+      .channel("journal-page")
+      .on("postgres_changes", { event: "*", schema: "public", table: "journal_posts" }, fetch)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const formatted = useMemo(() =>
@@ -48,8 +59,25 @@ const Blogs = memo(() => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 flex justify-center">
-        <Loader2 className="animate-spin text-muted-foreground" />
+      <div className="min-h-screen pt-32 md:pt-40 px-6 md:px-12">
+        <Skeleton className="h-6 w-16 mb-4" />
+        <Skeleton className="h-20 w-48 mb-16" />
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 md:col-span-8">
+            <Skeleton className="aspect-[16/9] w-full" />
+            <Skeleton className="h-4 w-48 mt-4" />
+            <Skeleton className="h-10 w-72 mt-2" />
+          </div>
+          <div className="col-span-12 md:col-span-4 space-y-8">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="border-t border-border pt-6">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-6 w-48 mt-2" />
+                <Skeleton className="h-4 w-full mt-1" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -70,7 +98,7 @@ const Blogs = memo(() => {
           <h1 className="editorial-heading text-foreground text-4xl md:text-6xl mb-8">{selectedPost.title}</h1>
           {selectedPost.thumbnail_url && (
             <div className="overflow-hidden mb-12" data-cursor="art">
-              <img src={selectedPost.thumbnail_url} alt={selectedPost.title} loading="lazy" className="w-full aspect-[16/9] object-cover" />
+              <img src={selectedPost.thumbnail_url} alt={selectedPost.title} loading="lazy" decoding="async" className="w-full aspect-[16/9] object-cover" />
             </div>
           )}
           {(selectedPost.content || "").split("\n\n").map((p, i) => (
@@ -103,7 +131,7 @@ const Blogs = memo(() => {
           <div className="col-span-12 md:col-span-8 group cursor-none" onClick={() => setSelectedPost(formatted[0])} data-cursor="art">
             <div className="overflow-hidden aspect-[16/9]">
               {formatted[0].thumbnail_url ? (
-                <img src={formatted[0].thumbnail_url} alt={formatted[0].title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={formatted[0].thumbnail_url} alt={formatted[0].title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full bg-muted" />
               )}

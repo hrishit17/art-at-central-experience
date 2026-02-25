@@ -19,15 +19,26 @@ const Hero = memo(() => {
   const [media, setMedia] = useState<HeroMedia | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("hero_media")
-      .select("id, media_url, media_type")
-      .eq("is_active", true)
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setMedia(data as HeroMedia);
-      });
+    const fetchHero = () => {
+      supabase
+        .from("hero_media")
+        .select("id, media_url, media_type")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setMedia(data as HeroMedia);
+        });
+    };
+
+    fetchHero();
+
+    const channel = supabase
+      .channel("hero-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "hero_media" }, fetchHero)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
@@ -58,7 +69,7 @@ const Hero = memo(() => {
       {isVideo ? (
         <video ref={videoRef} src={heroSrc} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover will-change-transform" />
       ) : (
-        <img ref={imageRef} src={heroSrc} alt="Art at Central gallery interior" className="absolute inset-0 w-full h-full object-cover will-change-transform" />
+        <img ref={imageRef} src={heroSrc} alt="Art at Central gallery interior" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover will-change-transform" />
       )}
       <div className="absolute inset-0 bg-foreground/30" />
       <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-12">

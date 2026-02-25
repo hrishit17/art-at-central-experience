@@ -8,10 +8,10 @@ interface SmoothScrollProps {
 
 const SmoothScroll = ({ children }: SmoothScrollProps) => {
   const lenisRef = useRef<Lenis | null>(null);
+  const rafIdRef = useRef<number | null>(null);
   const location = useLocation();
 
   useEffect(() => {
-    // Disable Lenis smooth scroll on touch devices to prevent jitter
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) return;
 
@@ -27,17 +27,18 @@ const SmoothScroll = ({ children }: SmoothScrollProps) => {
 
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafIdRef.current = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    rafIdRef.current = requestAnimationFrame(raf);
 
     return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
-  // Reset scroll position on route change
   useEffect(() => {
     if (lenisRef.current) {
       lenisRef.current.scrollTo(0, { immediate: true });
