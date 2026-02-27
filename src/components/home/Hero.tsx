@@ -41,6 +41,19 @@ const Hero = memo(() => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // Preload the active hero asset so the browser fetches it on the critical path
+  useEffect(() => {
+    const src = media?.media_url;
+    if (!src) return;
+    const isVideo = media?.media_type === "video";
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = isVideo ? "video" : "image";
+    link.href = src;
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, [media]);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ delay: 0.3 });
@@ -67,7 +80,7 @@ const Hero = memo(() => {
   return (
     <section ref={containerRef} className="relative h-screen w-full overflow-hidden">
       {isVideo ? (
-        <video ref={videoRef} src={heroSrc} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover will-change-transform" />
+        <video ref={videoRef} src={heroSrc} autoPlay muted loop playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover will-change-transform" />
       ) : (
         <img ref={imageRef} src={heroSrc} alt="Art at Central gallery interior" loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover will-change-transform" />
       )}
