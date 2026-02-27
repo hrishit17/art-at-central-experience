@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, useMemo } from "react";
+import { memo, useEffect, useRef, useState, useMemo, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,33 +17,67 @@ interface Exhibition {
   status: string;
 }
 
+const PAGE_SIZE = 12;
+
+const ExhibitionCard = memo(({ event, formatDate, showYear }: { event: Exhibition; formatDate: (s: string, e: string | null) => string; showYear?: boolean }) => (
+  <div className="exhibit-card group" data-cursor="art">
+    <div className="overflow-hidden aspect-[4/5]">
+      {event.cover_image_url ? (
+        <img src={event.cover_image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
+      ) : (
+        <div className="w-full h-full bg-muted" />
+      )}
+    </div>
+    <div className="mt-4">
+      <p className="micro-text text-muted-foreground">{showYear ? new Date(event.start_date).getFullYear() : event.category}</p>
+      <h3 className={`font-serif ${showYear ? 'text-xl' : 'text-2xl md:text-3xl'} text-foreground mt-${showYear ? '1' : '2'}`}>{event.title}</h3>
+      {!showYear && <p className="body-text text-sm text-muted-foreground mt-1">{formatDate(event.start_date, event.end_date)}</p>}
+      {!showYear && event.description && <p className="body-text text-sm text-muted-foreground mt-2 max-w-md">{event.description}</p>}
+      {showYear && <p className="body-text text-sm text-muted-foreground mt-1">{event.category}</p>}
+    </div>
+  </div>
+));
+ExhibitionCard.displayName = "ExhibitionCard";
+
 const Exhibitions = memo(() => {
   const gridRef = useRef<HTMLDivElement>(null);
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchPage = useCallback(async (offset: number, append: boolean) => {
+    const { data } = await supabase
+      .from("exhibitions")
+      .select("id, title, category, start_date, end_date, cover_image_url, description, status")
+      .order("start_date", { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1);
+
+    const results = (data as Exhibition[]) ?? [];
+    if (results.length < PAGE_SIZE) setHasMore(false);
+    setExhibitions(prev => append ? [...prev, ...results] : results);
+    setLoading(false);
+    setLoadingMore(false);
+  }, []);
 
   useEffect(() => {
-    const fetch = () => {
-      supabase
-        .from("exhibitions")
-        .select("id, title, category, start_date, end_date, cover_image_url, description, status")
-        .order("start_date", { ascending: false })
-        .limit(20)
-        .then(({ data }) => {
-          setExhibitions((data as Exhibition[]) ?? []);
-          setLoading(false);
-        });
-    };
-
-    fetch();
+    fetchPage(0, false);
 
     const channel = supabase
       .channel("exhibitions-page")
-      .on("postgres_changes", { event: "*", schema: "public", table: "exhibitions" }, fetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "exhibitions" }, () => {
+        setHasMore(true);
+        fetchPage(0, false);
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [fetchPage]);
+
+  const handleLoadMore = useCallback(() => {
+    setLoadingMore(true);
+    fetchPage(exhibitions.length, true);
+  }, [exhibitions.length, fetchPage]);
 
   const { current, past } = useMemo(() => {
     const current = exhibitions.filter(e => e.status === "upcoming" || e.status === "current");
@@ -51,11 +85,11 @@ const Exhibitions = memo(() => {
     return { current, past };
   }, [exhibitions]);
 
-  const formatDate = (start: string, end: string | null) => {
+  const formatDate = useCallback((start: string, end: string | null) => {
     const s = new Date(start).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     if (!end) return s;
     return `${s} — ${new Date(end).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-  };
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -99,21 +133,7 @@ const Exhibitions = memo(() => {
         {current.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-24 md:mb-40">
             {current.map((event) => (
-              <div key={event.id} className="exhibit-card group" data-cursor="art">
-                <div className="overflow-hidden aspect-[4/5]">
-                  {event.cover_image_url ? (
-                    <img src={event.cover_image_url} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform" />
-                  ) : (
-                    <div className="w-full h-full bg-muted" />
-                  )}
-                </div>
-                <div className="mt-4">
-                  <p className="micro-text text-muted-foreground">{event.category}</p>
-                  <h3 className="font-serif text-2xl md:text-3xl text-foreground mt-2">{event.title}</h3>
-                  <p className="body-text text-sm text-muted-foreground mt-1">{formatDate(event.start_date, event.end_date)}</p>
-                  {event.description && <p className="body-text text-sm text-muted-foreground mt-2 max-w-md">{event.description}</p>}
-                </div>
-              </div>
+              <ExhibitionCard key={event.id} event={event} formatDate={formatDate} />
             ))}
           </div>
         )}
@@ -124,20 +144,7 @@ const Exhibitions = memo(() => {
             <h2 className="editorial-heading text-foreground text-4xl md:text-6xl mb-16">Past Exhibitions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
               {past.map((exhibit) => (
-                <div key={exhibit.id} className="exhibit-card group" data-cursor="art">
-                  <div className="overflow-hidden aspect-[4/5]">
-                    {exhibit.cover_image_url ? (
-                      <img src={exhibit.cover_image_url} alt={exhibit.title} loading="lazy" decoding="async" className="w-full h-full object-cover film-grain transition-transform duration-700 group-hover:scale-105 will-change-transform" />
-                    ) : (
-                      <div className="w-full h-full bg-muted" />
-                    )}
-                  </div>
-                  <div className="mt-4">
-                    <p className="micro-text text-muted-foreground">{new Date(exhibit.start_date).getFullYear()}</p>
-                    <h3 className="font-serif text-xl text-foreground mt-1">{exhibit.title}</h3>
-                    <p className="body-text text-sm text-muted-foreground mt-1">{exhibit.category}</p>
-                  </div>
-                </div>
+                <ExhibitionCard key={exhibit.id} event={exhibit} formatDate={formatDate} showYear />
               ))}
             </div>
           </div>
@@ -145,6 +152,18 @@ const Exhibitions = memo(() => {
 
         {current.length === 0 && past.length === 0 && (
           <p className="body-text text-muted-foreground text-center py-24">No exhibitions yet. Check back soon.</p>
+        )}
+
+        {hasMore && (
+          <div className="flex justify-center py-16">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="micro-text border border-foreground text-foreground px-8 py-4 hover:bg-foreground hover:text-background transition-all duration-500 disabled:opacity-50"
+            >
+              {loadingMore ? "Loading…" : "Load More"}
+            </button>
+          </div>
         )}
       </div>
       <div className="h-24" />

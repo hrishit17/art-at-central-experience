@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -39,7 +39,7 @@ const HeroManager = () => {
 
   useEffect(() => { fetchItems(); }, []);
 
-  const handleUpload = async (url: string) => {
+  const handleUpload = useCallback(async (url: string) => {
     const isVideo = url.match(/\.(mp4|webm|mov)$/i);
     await supabase.from("hero_media" as any).insert({
       media_url: url,
@@ -48,18 +48,18 @@ const HeroManager = () => {
     } as any);
     toast({ title: "Hero media added" });
     fetchItems();
-  };
+  }, []);
 
-  const toggleActive = async (id: string, active: boolean) => {
+  const toggleActive = useCallback(async (id: string, active: boolean) => {
     if (active) {
       await supabase.from("hero_media" as any).update({ is_active: false } as any).neq("id", id);
     }
     await supabase.from("hero_media" as any).update({ is_active: active } as any).eq("id", id);
     toast({ title: active ? "Set as active" : "Deactivated" });
     fetchItems();
-  };
+  }, []);
 
-  const handleDelete = async (id: string, mediaUrl: string) => {
+  const handleDelete = useCallback(async (id: string, mediaUrl: string) => {
     const storagePath = extractStoragePath(mediaUrl, "hero-media");
     if (storagePath) {
       await supabase.storage.from("hero-media").remove([storagePath]);
@@ -67,7 +67,7 @@ const HeroManager = () => {
     await supabase.from("hero_media" as any).delete().eq("id", id);
     toast({ title: "Hero media deleted" });
     fetchItems();
-  };
+  }, []);
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>;
 
