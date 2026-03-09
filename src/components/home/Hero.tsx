@@ -17,7 +17,7 @@ const Hero = memo(() => {
   const line2Ref = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const [media, setMedia] = useState<HeroMedia | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchHero = () => {
@@ -29,7 +29,7 @@ const Hero = memo(() => {
         .maybeSingle()
         .then(({ data }) => {
           if (data) setMedia(data as HeroMedia);
-          setIsLoading(false); // Stop loading once data is fetched
+          setIsLoading(false);
         });
     };
 
@@ -43,7 +43,6 @@ const Hero = memo(() => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Preload the active hero asset so the browser fetches it on the critical path
   useEffect(() => {
     const src = media?.media_url;
     if (!src) return;
@@ -57,8 +56,7 @@ const Hero = memo(() => {
   }, [media]);
 
   useEffect(() => {
-    // Only run animations if we are done loading
-    if (isLoading) return; 
+    if (isLoading) return;
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ delay: 0.3 });
@@ -77,9 +75,8 @@ const Hero = memo(() => {
       }
     }, containerRef);
     return () => ctx.revert();
-  }, [media, isLoading]); // Re-run when loading completes
+  }, [media, isLoading]);
 
-  // Don't render anything while fetching from DB to prevent the "flash"
   if (isLoading) {
     return <section className="relative h-screen w-full bg-background" />;
   }
