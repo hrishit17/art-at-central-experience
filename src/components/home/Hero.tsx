@@ -17,6 +17,7 @@ const Hero = memo(() => {
   const line2Ref = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const [media, setMedia] = useState<HeroMedia | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
 
   useEffect(() => {
     const fetchHero = () => {
@@ -28,6 +29,7 @@ const Hero = memo(() => {
         .maybeSingle()
         .then(({ data }) => {
           if (data) setMedia(data as HeroMedia);
+          setIsLoading(false); // Stop loading once data is fetched
         });
     };
 
@@ -55,6 +57,9 @@ const Hero = memo(() => {
   }, [media]);
 
   useEffect(() => {
+    // Only run animations if we are done loading
+    if (isLoading) return; 
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ delay: 0.3 });
       const mediaEl = imageRef.current || videoRef.current;
@@ -72,7 +77,12 @@ const Hero = memo(() => {
       }
     }, containerRef);
     return () => ctx.revert();
-  }, [media]);
+  }, [media, isLoading]); // Re-run when loading completes
+
+  // Don't render anything while fetching from DB to prevent the "flash"
+  if (isLoading) {
+    return <section className="relative h-screen w-full bg-background" />;
+  }
 
   const heroSrc = media?.media_url || heroFallback;
   const isVideo = media?.media_type === "video";
