@@ -70,42 +70,59 @@ const ExhibitionsManager = () => {
       return;
     }
     setSaving(true);
-    const payload = {
-      title: form.title,
-      description: form.description || null,
-      cover_image_url: form.cover_image_url || null,
-      start_date: form.start_date,
-      end_date: form.end_date || null,
-      category: form.category,
-    };
+    try {
+      const payload = {
+        title: form.title,
+        description: form.description || null,
+        cover_image_url: form.cover_image_url || null,
+        start_date: form.start_date,
+        end_date: form.end_date || null,
+        category: form.category,
+      };
 
-    if (editing) {
-      await supabase.from("exhibitions" as any).update(payload as any).eq("id", editing.id);
-      toast({ title: "Exhibition updated" });
-    } else {
-      await supabase.from("exhibitions" as any).insert(payload as any);
-      toast({ title: "Exhibition created" });
+      if (editing) {
+        const { error } = await supabase.from("exhibitions" as any).update(payload as any).eq("id", editing.id);
+        if (error) throw error;
+        toast({ title: "Exhibition updated" });
+      } else {
+        const { error } = await supabase.from("exhibitions" as any).insert(payload as any);
+        if (error) throw error;
+        toast({ title: "Exhibition created" });
+      }
+      resetForm();
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    resetForm();
-    fetchItems();
   };
 
   const handleDelete = async (id: string, coverUrl: string | null) => {
-    if (coverUrl) {
-      const storagePath = extractStoragePath(coverUrl, "exhibitions");
-      if (storagePath) await supabase.storage.from("exhibitions").remove([storagePath]);
+    try {
+      if (coverUrl) {
+        const storagePath = extractStoragePath(coverUrl, "exhibitions");
+        if (storagePath) await supabase.storage.from("exhibitions").remove([storagePath]);
+      }
+      const { error } = await supabase.from("exhibitions" as any).delete().eq("id", id);
+      if (error) throw error;
+      toast({ title: "Exhibition deleted" });
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Deletion failed", description: err.message, variant: "destructive" });
     }
-    await supabase.from("exhibitions" as any).delete().eq("id", id);
-    toast({ title: "Exhibition deleted" });
-    fetchItems();
   };
 
   const toggleStatus = async (id: string, status: string) => {
-    const newStatus = status === "archived" ? "upcoming" : "archived";
-    await supabase.from("exhibitions" as any).update({ status: newStatus } as any).eq("id", id);
-    toast({ title: `Exhibition ${newStatus}` });
-    fetchItems();
+    try {
+      const newStatus = status === "archived" ? "upcoming" : "archived";
+      const { error } = await supabase.from("exhibitions" as any).update({ status: newStatus } as any).eq("id", id);
+      if (error) throw error;
+      toast({ title: `Exhibition ${newStatus}` });
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Status update failed", description: err.message, variant: "destructive" });
+    }
   };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>;
@@ -176,7 +193,8 @@ const ExhibitionsManager = () => {
           <div key={item.id} className="flex items-center gap-4 border border-border rounded-md p-4">
             {item.cover_image_url && (
               <div className="w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
-                <img src={item.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                {/* Cache busting timestamp forces immediate image refresh */}
+                <img src={`${item.cover_image_url}?t=${new Date().getTime()}`} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             )}
             <div className="flex-1 min-w-0">
