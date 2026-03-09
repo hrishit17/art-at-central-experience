@@ -68,7 +68,6 @@
 
   html {
     font-family: var(--font-sans);
-    cursor: none;
   }
 
   body {
@@ -76,10 +75,6 @@
     transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
                 color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-x: hidden;
-  }
-
-  a, button, [role="button"] {
-    cursor: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
