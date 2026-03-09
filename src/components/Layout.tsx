@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Navigation from "./Navigation";
 import Footer from "./Footer";
-import CustomCursor from "./CustomCursor";
 import SmoothScroll from "./SmoothScroll";
 
 const Layout = () => {
@@ -18,7 +17,6 @@ const Layout = () => {
 
   return (
     <SmoothScroll>
-      <CustomCursor />
       <Navigation
         onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
         isFocusMode={isFocusMode}
