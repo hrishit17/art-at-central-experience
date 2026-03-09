@@ -193,7 +193,6 @@ const ExhibitionsManager = () => {
           <div key={item.id} className="flex items-center gap-4 border border-border rounded-md p-4">
             {item.cover_image_url && (
               <div className="w-16 h-20 rounded overflow-hidden bg-muted flex-shrink-0">
-                {/* Cache busting timestamp forces immediate image refresh */}
                 <img src={`${item.cover_image_url}?t=${new Date().getTime()}`} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             )}
