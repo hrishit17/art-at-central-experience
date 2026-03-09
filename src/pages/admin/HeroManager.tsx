@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -39,35 +39,53 @@ const HeroManager = () => {
 
   useEffect(() => { fetchItems(); }, []);
 
-  const handleUpload = useCallback(async (url: string) => {
-    const isVideo = url.match(/\.(mp4|webm|mov)$/i);
-    await supabase.from("hero_media" as any).insert({
-      media_url: url,
-      media_type: isVideo ? "video" : "image",
-      file_name: url.split("/").pop(),
-    } as any);
-    toast({ title: "Hero media added" });
-    fetchItems();
-  }, []);
-
-  const toggleActive = useCallback(async (id: string, active: boolean) => {
-    if (active) {
-      await supabase.from("hero_media" as any).update({ is_active: false } as any).neq("id", id);
+  const handleUpload = async (url: string) => {
+    try {
+      const isVideo = url.match(/\.(mp4|webm|mov)$/i);
+      const { error } = await supabase.from("hero_media" as any).insert({
+        media_url: url,
+        media_type: isVideo ? "video" : "image",
+        file_name: url.split("/").pop(),
+      } as any);
+      
+      if (error) throw error;
+      toast({ title: "Hero media added" });
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     }
-    await supabase.from("hero_media" as any).update({ is_active: active } as any).eq("id", id);
-    toast({ title: active ? "Set as active" : "Deactivated" });
-    fetchItems();
-  }, []);
+  };
 
-  const handleDelete = useCallback(async (id: string, mediaUrl: string) => {
-    const storagePath = extractStoragePath(mediaUrl, "hero-media");
-    if (storagePath) {
-      await supabase.storage.from("hero-media").remove([storagePath]);
+  const toggleActive = async (id: string, active: boolean) => {
+    try {
+      if (active) {
+        await supabase.from("hero_media" as any).update({ is_active: false } as any).neq("id", id);
+      }
+      const { error } = await supabase.from("hero_media" as any).update({ is_active: active } as any).eq("id", id);
+      
+      if (error) throw error;
+      toast({ title: active ? "Set as active" : "Deactivated" });
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Status update failed", description: err.message, variant: "destructive" });
     }
-    await supabase.from("hero_media" as any).delete().eq("id", id);
-    toast({ title: "Hero media deleted" });
-    fetchItems();
-  }, []);
+  };
+
+  const handleDelete = async (id: string, mediaUrl: string) => {
+    try {
+      const storagePath = extractStoragePath(mediaUrl, "hero-media");
+      if (storagePath) {
+        await supabase.storage.from("hero-media").remove([storagePath]);
+      }
+      const { error } = await supabase.from("hero_media" as any).delete().eq("id", id);
+      
+      if (error) throw error;
+      toast({ title: "Hero media deleted" });
+      fetchItems();
+    } catch (err: any) {
+      toast({ title: "Deletion failed", description: err.message, variant: "destructive" });
+    }
+  };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>;
 
@@ -92,7 +110,8 @@ const HeroManager = () => {
               {item.media_type === "video" ? (
                 <video src={item.media_url} className="w-full h-full object-cover" muted />
               ) : (
-                <img src={item.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                {/* Cache busting timestamp forces immediate image refresh */}
+                <img src={`${item.media_url}?t=${new Date().getTime()}`} alt="" className="w-full h-full object-cover" loading="lazy" />
               )}
             </div>
             <div className="flex-1 min-w-0">
