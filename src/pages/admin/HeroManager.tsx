@@ -110,7 +110,6 @@ const HeroManager = () => {
               {item.media_type === "video" ? (
                 <video src={item.media_url} className="w-full h-full object-cover" muted />
               ) : (
-                {/* Cache busting timestamp forces immediate image refresh */}
                 <img src={`${item.media_url}?t=${new Date().getTime()}`} alt="" className="w-full h-full object-cover" loading="lazy" />
               )}
             </div>
