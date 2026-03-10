@@ -26,11 +26,17 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: settings } = await supabase
+    // Fetch the most recent configured enquiry email securely
+    const { data: settings, error: settingsError } = await supabase
       .from("site_settings")
       .select("enquiry_receiving_email")
+      .order("created_at", { ascending: false }) // Ensures it gets the latest update
       .limit(1)
-      .single();
+      .maybeSingle(); // Prevents crashing if the table is empty
+
+    if (settingsError) {
+      console.error("Warning: Could not fetch site settings", settingsError);
+    }
 
     const toEmail = settings?.enquiry_receiving_email || "info@artatcentral.com";
 
