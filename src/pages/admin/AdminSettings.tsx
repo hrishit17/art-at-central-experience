@@ -27,8 +27,10 @@ const AdminSettings = () => {
         const { data, error } = await supabase
           .from("site_settings")
           .select("id, enquiry_receiving_email")
+          .order("created_at", { ascending: false }) // Ensures we always get the newest row
           .limit(1)
-          .single();
+          .maybeSingle(); // Prevents crashing if the table is completely empty
+
         if (error) throw error;
         if (data) {
           setEnquiryEmail(data.enquiry_receiving_email);
@@ -83,14 +85,30 @@ const AdminSettings = () => {
 
   const handleEnquiryEmailUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!enquiryEmail.trim() || !settingsId) return;
+    if (!enquiryEmail.trim()) return;
     setEnquiryLoading(true);
+    
     try {
-      const { error } = await supabase
-        .from("site_settings")
-        .update({ enquiry_receiving_email: enquiryEmail })
-        .eq("id", settingsId);
-      if (error) throw error;
+      if (settingsId) {
+        // Update existing row
+        const { error } = await supabase
+          .from("site_settings")
+          .update({ enquiry_receiving_email: enquiryEmail })
+          .eq("id", settingsId);
+        if (error) throw error;
+      } else {
+        // Fallback: Insert a new row if the table was empty
+        const { data, error } = await supabase
+          .from("site_settings")
+          .insert({ enquiry_receiving_email: enquiryEmail })
+          .select("id")
+          .single();
+        if (error) throw error;
+        if (data) {
+          setSettingsId(data.id);
+        }
+      }
+      
       toast({ title: "Enquiry email updated", description: `All enquiries will now be sent to ${enquiryEmail}.` });
     } catch (err: any) {
       toast({ title: "Update failed", description: err.message, variant: "destructive" });
